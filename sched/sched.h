@@ -363,7 +363,7 @@ struct rt_rq {
 };
 
 struct dummy_rq {
-	struct list_head queue;
+	struct list_head queues[5]; // 0 index is highest priority
 };
 
 #ifdef CONFIG_SMP
