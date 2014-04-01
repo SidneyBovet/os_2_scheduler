@@ -87,7 +87,8 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq)
 	struct dummy_rq *dummy_rq = &rq->dummy;
 	struct sched_dummy_entity *next;
 
-	for(int i = 0; i < 4; i++) {
+	int i;
+	for(i = 0; i < 4; i++) {
 		if (!list_empty(&dummy_rq->queues[i])) {
 			next = list_first_entry(&dummy_rq->queues[i], struct sched_dummy_entity, run_list);
 			return dummy_task_of(next);
