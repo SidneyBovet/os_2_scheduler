@@ -97,6 +97,7 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq)
 	int i;
 	for(i = 0; i < 4; i++) {
 		if (!list_empty(&dummy_rq->queues[i])) {
+			rq->dummy_rq->quantum = get_timeslice();
 			next = list_first_entry(&dummy_rq->queues[i], struct sched_dummy_entity, run_list);
 			return dummy_task_of(next);
 		}
@@ -115,6 +116,12 @@ static void set_curr_task_dummy(struct rq *rq)
 
 static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
+	rq->dummy_rq->quantum--;
+	if(rq->dummy_rq->quantum <= 0) {
+		dequeue_task_dummy(rq, rq->curr, rq->curr->flags);
+		enqueue_task_dummy(rq, rq->curr, rq->curr->flags);
+		resched_task(rq->curr);	
+	}
 }
 
 static void switched_from_dummy(struct rq *rq, struct task_struct *p)
