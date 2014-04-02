@@ -117,7 +117,7 @@ static void set_curr_task_dummy(struct rq *rq)
 static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
 	rq->dummy_rq->quantum--;
-	if(rq->dummy_rq->quantum <= 0) {
+	if(rq->dummy_rq->quantum <= 0) {
 		dequeue_task_dummy(rq, rq->curr, rq->curr->flags);
 		enqueue_task_dummy(rq, rq->curr, rq->curr->flags);
 		resched_task(rq->curr);	
