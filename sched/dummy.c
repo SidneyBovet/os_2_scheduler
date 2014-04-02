@@ -76,20 +76,28 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 
 static void yield_task_dummy(struct rq *rq)
 {
+	dequeue_task_dummy(rq, rq->curr, rq->curr->flags);
+	enqueue_task_dummy(rq, rq->curr, rq->curr->flags);
+	// resched_task ? 
 }
 
 static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
+	if(p->prio < rq->curr->prio) {
+		// dequeue_task_dummy(rq, rq->curr, flags);
+		// enqueue_task_dummy(rq, rq->curr, flags);
+		resched_task(rq->curr);	
+	}
 }
 
 static struct task_struct *pick_next_task_dummy(struct rq *rq)
 {
 	struct dummy_rq *dummy_rq = &rq->dummy;
 	struct sched_dummy_entity *next;
-
 	int i;
 	for(i = 0; i < 4; i++) {
 		if (!list_empty(&dummy_rq->queues[i])) {
+			rq->dummy_rq->quantum = get_timeslice();
 			next = list_first_entry(&dummy_rq->queues[i], struct sched_dummy_entity, run_list);
 			return dummy_task_of(next);
 		}
@@ -108,6 +116,12 @@ static void set_curr_task_dummy(struct rq *rq)
 
 static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
+	rq->dummy_rq->quantum--;
+	if(rq->dummy_rq->quantum <= 0) {
+		dequeue_task_dummy(rq, rq->curr, rq->curr->flags);
+		enqueue_task_dummy(rq, rq->curr, rq->curr->flags);
+		resched_task(rq->curr);	
+	}
 }
 
 static void switched_from_dummy(struct rq *rq, struct task_struct *p)
