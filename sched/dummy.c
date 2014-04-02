@@ -30,7 +30,7 @@ static inline unsigned int get_age_threshold()
 
 void init_dummy_rq(struct dummy_rq *dummy_rq, struct rq *rq)
 {
-	for(int i = 0; i < 5; i++) {
+	for(int i = 0; i < 5; i++) {
 		INIT_LIST_HEAD(&dummy_rq->queues[i]);
 	}
 }
@@ -47,7 +47,7 @@ static inline struct task_struct *dummy_task_of(struct sched_dummy_entity *dummy
 static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 {
 	struct sched_dummy_entity *dummy_se = &p->dummy_se;
-	int prio = p->prio - 131; // to get index between 0 and 4 
+	int prio = p->prio - 131; // to get index between 0 and 4 
 	struct list_head *queue = &rq->dummy.queues[prio];
 	list_add_tail(&dummy_se->run_list, queue);
 }
@@ -95,7 +95,7 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq)
 	struct dummy_rq *dummy_rq = &rq->dummy;
 	struct sched_dummy_entity *next;
 	int i;
-	for(i = 0; i < 4; i++) {
+	for(i = 0; i < 4; i++) {
 		if (!list_empty(&dummy_rq->queues[i])) {
 			rq->dummy_rq->quantum = get_timeslice();
 			next = list_first_entry(&dummy_rq->queues[i], struct sched_dummy_entity, run_list);
