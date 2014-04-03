@@ -68,6 +68,7 @@ static void enqueue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 	_enqueue_task_dummy(rq, p);
 	p->dummy_se.age_count = get_age_threshold();
 	inc_nr_running(rq);
+	printk(KERN_CRIT "enqueue: %d\n",p->pid);
 }
 
 static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
@@ -78,12 +79,14 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 		p->prio = p->static_prio;	
 	}
 	dec_nr_running(rq);
+	printk(KERN_CRIT "dequeue: %d\n",p->pid);
 }
 
 static void yield_task_dummy(struct rq *rq)
 {
 	dequeue_task_dummy(rq, rq->curr, rq->curr->flags);
 	enqueue_task_dummy(rq, rq->curr, rq->curr->flags);
+	printk(KERN_CRIT "yield: %d\n",p->pid);
 	// resched_task ? No
 	// recover old priority ? 
 }
@@ -93,6 +96,7 @@ static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int f
 	if(p->prio < rq->curr->prio) {
 		// dequeue_task_dummy(rq, rq->curr, flags);
 		// enqueue_task_dummy(rq, rq->curr, flags);
+		printk(KERN_CRIT "preempt: %d\n",p->pid);
 		resched_task(rq->curr);	
 	}
 }
@@ -107,6 +111,7 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq)
 			rq->dummy.quantum = get_timeslice();
 			next = list_first_entry(&dummy_rq->queues[i], struct sched_dummy_entity, run_list);
 			next->age_count = get_age_threshold();
+			printk(KERN_CRIT "pick_next: %d\n",p->pid);
 			return dummy_task_of(next);
 		}
 	}
@@ -143,6 +148,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 			if(entity != &curr->dummy_se) {		
 				entity->age_count--;
 				if(entity->age_count == 0) {
+					printk(KERN_CRIT "aging: %d\n",p->pid);
 					task = dummy_task_of(entity);
 					task->prio--;
 					dequeue_task_dummy(rq, task, task->flags);
