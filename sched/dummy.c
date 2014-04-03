@@ -66,12 +66,17 @@ static inline void _dequeue_task_dummy(struct task_struct *p)
 static void enqueue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
 	_enqueue_task_dummy(rq, p);
+	p->dummy_se.age_count = get_age_threshold();
 	inc_nr_running(rq);
 }
 
 static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
 	_dequeue_task_dummy(p);
+	// Only those finishing executing have age_count max
+	if(p->dummy_se.age_count == get_age_threshold()) {
+		p->prio = p->static_prio;	
+	}
 	dec_nr_running(rq);
 }
 
@@ -79,7 +84,8 @@ static void yield_task_dummy(struct rq *rq)
 {
 	dequeue_task_dummy(rq, rq->curr, rq->curr->flags);
 	enqueue_task_dummy(rq, rq->curr, rq->curr->flags);
-	// resched_task ? 
+	// resched_task ? No
+	// recover old priority ? 
 }
 
 static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int flags)
@@ -100,6 +106,7 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq)
 		if (!list_empty(&dummy_rq->queues[i])) {
 			rq->dummy.quantum = get_timeslice();
 			next = list_first_entry(&dummy_rq->queues[i], struct sched_dummy_entity, run_list);
+			next->age_count = get_age_threshold();
 			return dummy_task_of(next);
 		}
 	}
@@ -122,6 +129,27 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 		dequeue_task_dummy(rq, rq->curr, rq->curr->flags);
 		enqueue_task_dummy(rq, rq->curr, rq->curr->flags);
 		resched_task(rq->curr);	
+	}
+
+	int i;
+	struct dummy_rq *dummy_rq = &rq->dummy;
+	struct sched_dummy_entity *entity;
+	struct task_struct* task;
+
+	// Don't loop over 131 because aging is useless there
+	for(i = 1; i < 5; i++) {
+		// Iterate over elements of each queue
+		list_for_each_entry(entity, &dummy_rq->queues[i], run_list) {
+			if(entity != &curr->dummy_se) {		
+				entity->age_count--;
+				if(entity->age_count == 0) {
+					task = dummy_task_of(entity);
+					task->prio--;
+					dequeue_task_dummy(rq, task, task->flags);
+					enqueue_task_dummy(rq, task, task->flags);				
+				}
+			}		
+		}
 	}
 }
 
