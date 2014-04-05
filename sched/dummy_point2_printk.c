@@ -101,7 +101,7 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq)
 	struct dummy_rq *dummy_rq = &rq->dummy;
 	struct sched_dummy_entity *next;
 	int j;
-	for(j = 0; j < 4; j++) {
+	for(j = 0; j < 5; j++) {
 		if (!list_empty(&dummy_rq->queues[j])) {
 			next = list_first_entry(&dummy_rq->queues[j], struct sched_dummy_entity, run_list);
 		printk(KERN_CRIT "pick_next: %d\n",p->pid);		
