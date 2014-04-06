@@ -1,0 +1,18 @@
+Output des tests:
+
+Terminal: output du terminal avec petite description du tests + si ca semble ok ou non
+
+Console: output des printks
+
+Marche à suivre pour output console:
+
+CTRL + ALT + F1: pour entrer en console mode
+sudo dmesg -C: pour clean l'output déjà présent
+sudo test_a_lancer.sh:
+dmesg > test*_console_output
+sudo dmesg -C: pour clean l'output déjà présent
+sudo test_a_lancer.sh:
+dmesg > test*_console_output
+etc...
+CTRL + ALT + F7: pour quitter le console mode
+
