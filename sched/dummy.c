@@ -79,10 +79,11 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 
 static void yield_task_dummy(struct rq *rq)
 {
+	printk(KERN_CRIT "yield: %d\n",rq->curr->pid);
 	dequeue_task_dummy(rq, rq->curr, rq->curr->flags);
 	enqueue_task_dummy(rq, rq->curr, rq->curr->flags);
-	printk(KERN_CRIT "yield: %d\n",p->pid);
 	// resched_task ? No
+	// recover old priority ?
 }
 
 static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int flags)
@@ -90,8 +91,8 @@ static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int f
 	if(p->prio < rq->curr->prio) {
 		// dequeue_task_dummy(rq, rq->curr, flags);
 		// enqueue_task_dummy(rq, rq->curr, flags);
-		resched_task(rq->curr);	
 		printk(KERN_CRIT "preempt: %d\n",p->pid);
+		resched_task(rq->curr);	
 	}
 }
 
@@ -104,7 +105,7 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq)
 		if (!list_empty(&dummy_rq->queues[i])) {
 			rq->dummy.quantum = get_timeslice();
 			next = list_first_entry(&dummy_rq->queues[i], struct sched_dummy_entity, run_list);
-			printk(KERN_CRIT "pick_next: %d\n",p->pid); //??????????
+			printk(KERN_CRIT "pick_next: %d\n",dummy_task_of(next)->pid); // !!!!
 			return dummy_task_of(next);
 		}
 	}
@@ -124,6 +125,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
 	rq->dummy.quantum--;
 	if(rq->dummy.quantum <= 0) {
+		printk(KERN_CRIT "timesliced: %d\n",curr->pid);
 		dequeue_task_dummy(rq, rq->curr, rq->curr->flags);
 		enqueue_task_dummy(rq, rq->curr, rq->curr->flags);
 		resched_task(rq->curr);	
