@@ -145,12 +145,12 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 	for(i = 1; i < 5; i++) {
 		// Iterate over elements of each queue
 		list_for_each_entry(entity, &dummy_rq->queues[i], run_list) {
-			if(entity != &curr->dummy_se) {		
+			if(entity != &curr->dummy_se) {		
 				entity->age_count--;
 				if(entity->age_count == 0) {
 					task = dummy_task_of(entity);
 					task->prio--;
-					printk(KERN_CRIT "aging: %d\n",r->pid);
+					printk(KERN_CRIT "aging: %d\n",task->pid);
 					dequeue_task_dummy(rq, task, task->flags);
 					enqueue_task_dummy(rq, task, task->flags);				
 				}
