@@ -131,30 +131,31 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
 	rq->dummy.quantum--;
 	if(rq->dummy.quantum <= 0) {
-		dequeue_task_dummy(rq, rq->curr, rq->curr->flags);
-		enqueue_task_dummy(rq, rq->curr, rq->curr->flags);
-		resched_task(rq->curr);	
+		printk(KERN_CRIT "timesliced: %d\n",curr->pid);
+		dequeue_task_dummy(rq, curr, curr->flags);
+		enqueue_task_dummy(rq, curr, curr->flags);
+		resched_task(curr);
 	}
 
-	int i;
 	struct dummy_rq *dummy_rq = &rq->dummy;
 	struct sched_dummy_entity *entity;
+	struct sched_dummy_entity *entity_temp;
 	struct task_struct* task;
 
-	// Don't loop over 131 because aging is useless there
-	for(i = 1; i < 5; i++) {
+	// Don't loop over smaller or equal priorities than current task (aging is useless there)
+	int start = rq->curr->prio - 131 + 1;
+	int i;
+	for(i = start; i < 5; i++) {
 		// Iterate over elements of each queue
-		list_for_each_entry(entity, &dummy_rq->queues[i], run_list) {
-			if(entity != &curr->dummy_se) {		
-				entity->age_count--;
-				if(entity->age_count == 0) {
-					task = dummy_task_of(entity);
-					task->prio--;
-					printk(KERN_CRIT "aging: %d\n",task->pid);
-					dequeue_task_dummy(rq, task, task->flags);
-					enqueue_task_dummy(rq, task, task->flags);				
-				}
-			}		
+		list_for_each_entry_safe(entity, entity_temp, &dummy_rq->queues[i], run_list) {
+			entity->age_count--;
+			if(entity->age_count == 0) {
+				task = dummy_task_of(entity);
+				task->prio--;
+				printk(KERN_CRIT "aging: %d\n",task->pid);
+				dequeue_task_dummy(rq, task, task->flags);
+				enqueue_task_dummy(rq, task, task->flags);				
+			}
 		}
 	}
 }
