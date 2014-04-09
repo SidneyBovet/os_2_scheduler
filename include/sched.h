@@ -1021,6 +1021,7 @@ struct sched_rt_entity {
 struct sched_dummy_entity {
 	struct list_head run_list;
 	int age_count;
+	int quantum;
 };
 
 struct rcu_node;

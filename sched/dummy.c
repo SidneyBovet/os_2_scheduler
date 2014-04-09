@@ -48,7 +48,7 @@ static inline struct task_struct *dummy_task_of(struct sched_dummy_entity *dummy
 static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 {
 	struct sched_dummy_entity *dummy_se = &p->dummy_se;
-	int prio = p->prio - 131; // to get index between 0 and 4 
+	int prio = p->prio - 131; // to get index between 0 and 4
 	struct list_head *queue = &rq->dummy.queues[prio];
 	list_add_tail(&dummy_se->run_list, queue);
 }
@@ -97,7 +97,7 @@ static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int f
 		// dequeue_task_dummy(rq, rq->curr, flags);
 		// enqueue_task_dummy(rq, rq->curr, flags);
 		printk(KERN_CRIT "preempt: %d\n",p->pid);
-		resched_task(rq->curr);	
+		resched_task(rq->curr);
 	}
 }
 
