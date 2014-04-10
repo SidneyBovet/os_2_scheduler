@@ -79,7 +79,7 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
 	_dequeue_task_dummy(p);
 	// Only those finishing executing have age_count max
-	if(p->dummy_se.age_count == get_age_threshold()) {
+	if(p->dummy_se.age_count == 0) {
 		p->prio = p->static_prio;	
 	}
 	dec_nr_running(rq);
@@ -113,7 +113,6 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq)
 	for(i = 0; i < 5; i++) {
 		if (!list_empty(&dummy_rq->queues[i])) {
 			next = list_first_entry(&dummy_rq->queues[i], struct sched_dummy_entity, run_list);
-			next->age_count = get_age_threshold();
 			printk(KERN_CRIT "pick_next: %d\n",rq->curr->pid);
 			return dummy_task_of(next);
 		}
@@ -151,8 +150,8 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 	for(i = start; i < 5; i++) {
 		// Iterate over elements of each queue
 		list_for_each_entry_safe(entity, entity_temp, &dummy_rq->queues[i], run_list) {
-			entity->age_count--;
-			if(entity->age_count == 0) {
+			entity->age_count++;
+			if(entity->age_count >= get_age_threshold()) {
 				task = dummy_task_of(entity);
 				task->prio--;
 				printk(KERN_CRIT "aging: %d\n",task->pid);
