@@ -66,7 +66,11 @@ static inline void _dequeue_task_dummy(struct task_struct *p)
 static void enqueue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
 	_enqueue_task_dummy(rq, p);
-	p->dummy_se.age_count = get_age_threshold();
+	p->dummy_se.age_count = 0;
+	//to check init quantum
+	if(p->dummy_se.quantum >= get_timeslice()){
+		p->dummy_se.quantum = 0;
+	}
 	inc_nr_running(rq);
 	printk(KERN_CRIT "enqueue: %d\n",p->pid);
 }
@@ -108,7 +112,6 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq)
 	int i;
 	for(i = 0; i < 5; i++) {
 		if (!list_empty(&dummy_rq->queues[i])) {
-			rq->dummy.quantum = get_timeslice();
 			next = list_first_entry(&dummy_rq->queues[i], struct sched_dummy_entity, run_list);
 			next->age_count = get_age_threshold();
 			printk(KERN_CRIT "pick_next: %d\n",rq->curr->pid);
@@ -129,8 +132,8 @@ static void set_curr_task_dummy(struct rq *rq)
 
 static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
-	rq->dummy.quantum--;
-	if(rq->dummy.quantum <= 0) {
+	curr->dummy_se.quantum++;
+	if(curr->dummy_se.quantum >= get_timeslice()) {
 		printk(KERN_CRIT "timesliced: %d\n",curr->pid);
 		dequeue_task_dummy(rq, curr, curr->flags);
 		enqueue_task_dummy(rq, curr, curr->flags);

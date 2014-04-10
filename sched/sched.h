@@ -364,7 +364,6 @@ struct rt_rq {
 
 struct dummy_rq {
 	struct list_head queues[5]; // 0 index is highest priority
-	int quantum;
 };
 
 #ifdef CONFIG_SMP
